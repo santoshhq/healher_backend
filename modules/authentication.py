@@ -139,7 +139,7 @@ async def send_email_otp(to_email: str, otp: str):
 
     try:
         r = resend.Emails.send({
-            "from": "Healther <onboarding@resend.dev>",
+            "from": "Healther <noreply@genxtechnologies.tech>",
             "to": [to_email],
             "subject": "Your OTP Verification Code",
             "html": html_content,
@@ -473,7 +473,7 @@ async def forgot_password_endpoint(data: forgot_password):
 
         try:
             r = resend.Emails.send({
-                "from": "Healther <onboarding@resend.dev>",
+                "from": "Healther <noreply@genxtechnologies.tech>",
                 "to": [data.email_id],
                 "subject": "Password Reset OTP",
                 "html": html_content,
