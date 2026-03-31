@@ -5,10 +5,12 @@ import hashlib
 from datetime import datetime, timedelta
 import random
 import os
-import aiosmtplib
-from email.message import EmailMessage
+import resend
 import bcrypt
 
+
+# Initialize Resend with API key
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 auth = APIRouter()
 
@@ -28,11 +30,6 @@ def generate_otp():
 
 # 📩 Async Email Sender
 async def send_email_otp(to_email: str, otp: str):
-    message = EmailMessage()
-    message["From"] = "santoshxr53@gmail.com"
-    message["To"] = to_email
-    message["Subject"] = "Your OTP Verification Code"
-
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -112,25 +109,25 @@ async def send_email_otp(to_email: str, otp: str):
             <div class="header">
                 <h1>🔐 Email Verification</h1>
             </div>
-            
+
             <p class="content">Hello,</p>
-            
+
             <p class="content">Thank you for signing up! Please use the OTP code below to verify your email address.</p>
-            
+
             <div class="otp-box">
                 <p>Your One-Time Password</p>
                 <div class="otp-code">{otp}</div>
                 <p>Valid for 5 minutes</p>
             </div>
-            
+
             <div class="warning">
                 ⚠️ <strong>Important:</strong> Never share this OTP with anyone. We will never ask for this code via email or message.
             </div>
-            
+
             <p class="content">
                 If you didn't create this account, please ignore this email.
             </p>
-            
+
             <div class="footer">
                 <p>© 2026 Healther. All rights reserved.</p>
                 <p>This is an automated message, please do not reply to this email.</p>
@@ -139,18 +136,15 @@ async def send_email_otp(to_email: str, otp: str):
     </body>
     </html>
     """
-    
-    message.add_alternative(html_content, subtype='html')
 
     try:
-        await aiosmtplib.send(
-            message,
-            hostname="smtp.gmail.com",
-            port=587,
-            start_tls=True,
-            username=os.getenv("GMAIL_USERNAME"),
-            password=os.getenv("GMAIL_APP_PASSWORD")
-        )
+        r = resend.Emails.send({
+            "from": "Healther <onboarding@resend.dev>",
+            "to": [to_email],
+            "subject": "Your OTP Verification Code",
+            "html": html_content,
+        })
+        return r
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -370,11 +364,6 @@ async def forgot_password_endpoint(data: forgot_password):
         )
 
         # 📩 Send OTP Email for password reset
-        message = EmailMessage()
-        message["From"] = "santoshxr53@gmail.com"
-        message["To"] = data.email_id
-        message["Subject"] = "Password Reset OTP"
-
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -454,25 +443,25 @@ async def forgot_password_endpoint(data: forgot_password):
                 <div class="header">
                     <h1>🔑 Password Reset</h1>
                 </div>
-                
+
                 <p class="content">Hello,</p>
-                
+
                 <p class="content">We received a request to reset your password. Please use the OTP code below to proceed with resetting your password.</p>
-                
+
                 <div class="otp-box">
                     <p>Your Password Reset Code</p>
                     <div class="otp-code">{otp}</div>
                     <p>Valid for 10 minutes</p>
                 </div>
-                
+
                 <div class="warning">
                     ⚠️ <strong>Important:</strong> Never share this OTP with anyone. We will never ask for this code via email or message.
                 </div>
-                
+
                 <p class="content">
                     If you didn't request a password reset, please ignore this email and your account will remain secure.
                 </p>
-                
+
                 <div class="footer">
                     <p>© 2026 Healther. All rights reserved.</p>
                     <p>This is an automated message, please do not reply to this email.</p>
@@ -481,18 +470,14 @@ async def forgot_password_endpoint(data: forgot_password):
         </body>
         </html>
         """
-        
-        message.add_alternative(html_content, subtype='html')
 
         try:
-            await aiosmtplib.send(
-                message,
-                hostname="smtp.gmail.com",
-                port=587,
-                start_tls=True,
-                username=os.getenv("GMAIL_USERNAME"),
-                password=os.getenv("GMAIL_APP_PASSWORD")
-            )
+            r = resend.Emails.send({
+                "from": "Healther <onboarding@resend.dev>",
+                "to": [data.email_id],
+                "subject": "Password Reset OTP",
+                "html": html_content,
+            })
         except Exception as e:
             raise HTTPException(
                 status_code=500,
