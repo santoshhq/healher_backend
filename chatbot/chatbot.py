@@ -25,10 +25,10 @@ assert api_key is not None, "API key missing"
 #memory = Supermemory(api_key="")
 #gemini_model=ChatGoogleGenerativeAI(model="gemini-2.5-flash",api_key="")
 gemini_model=ChatNVIDIA(
-  model="google/gemma-3-27b-it",
+  model="deepseek-ai/deepseek-v3.2",
   api_key=os.getenv("NVIDIA_API_KEY"),
   max_completion_tokens=500
-
+ 
 )
 DB_URL="redis://default:8CKkCCvcCq8DKQaFx3Pik5VkeKmsUbLv@redis-16514.crce292.ap-south-1-2.ec2.cloud.redislabs.com:16514"
 
